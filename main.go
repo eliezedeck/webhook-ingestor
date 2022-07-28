@@ -13,6 +13,9 @@ func main() {
 	logging.Init()
 	logging.L = logging.L.Named("WebhookIngestor")
 
+	// ... can exit here if user is doing `-help`
+	parseFlags()
+
 	// Setup Web server (using Echo)
 	e := echo.New()
 	e.HidePort = true
@@ -35,5 +38,5 @@ func main() {
 		}
 	}
 
-	panic(e.Start(":8080"))
+	panic(e.Start(listen))
 }
