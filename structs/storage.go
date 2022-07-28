@@ -1,4 +1,4 @@
-package main
+package structs
 
 type ConfigStorage interface {
 	GetValidWebhooks() ([]*Webhook, error)
@@ -10,6 +10,7 @@ type ConfigStorage interface {
 }
 
 type RequestsStorage interface {
+	StoreRequest(request *Request) error
 	GetOldestRequests(count int) ([]*Request, error)
 	GetNewestRequests(count int) ([]*Request, error)
 }

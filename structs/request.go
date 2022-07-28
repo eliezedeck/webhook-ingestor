@@ -1,4 +1,4 @@
-package main
+package structs
 
 import "time"
 
@@ -10,4 +10,6 @@ type Request struct {
 	Body    string
 
 	CreatedAt time.Time
+
+	FailedForwardUrl *ForwardUrl
 }

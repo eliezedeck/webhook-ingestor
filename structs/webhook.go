@@ -1,4 +1,4 @@
-package main
+package structs
 
 type Webhook struct {
 	ID      string
@@ -6,10 +6,13 @@ type Webhook struct {
 
 	Path        string
 	ForwardUrls []*ForwardUrl
+
+	FailedRequests []*Request
 }
 
 type ForwardUrl struct {
-	URL string
+	ID string
 
+	Url                    string
 	KeepSuccessfulRequests bool
 }
