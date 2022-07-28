@@ -1,6 +1,9 @@
 package structs
 
 type ConfigStorage interface {
+	GetAdminPath() (string, error)
+	SetAdminPath(path string) error
+
 	GetValidWebhooks() ([]*Webhook, error)
 
 	AddWebhook(webhook *Webhook) error
