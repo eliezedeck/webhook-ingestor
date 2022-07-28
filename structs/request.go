@@ -3,13 +3,11 @@ package structs
 import "time"
 
 type Request struct {
-	ID      string
-	Method  string
-	Path    string
-	Headers map[string][]string
-	Body    string
-
-	CreatedAt time.Time
-
-	FailedForwardUrl *ForwardUrl
+	ID               string              `json:"id"`
+	Method           string              `json:"method"`
+	Path             string              `json:"path"`
+	Headers          map[string][]string `json:"headers"`
+	Body             string              `json:"body"`
+	CreatedAt        time.Time           `json:"createdAt"`
+	FailedForwardUrl *ForwardUrl         `json:"failedForwardUrl"`
 }
