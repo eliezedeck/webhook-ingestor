@@ -2,6 +2,7 @@ package impl
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/eliezedeck/webhook-ingestor/structs"
 )
@@ -60,6 +61,14 @@ func (m *MemoryStorage) DisableWebhook(id string) error {
 		}
 	}
 	return fmt.Errorf("webhook with id %s not found", id)
+}
+
+func (m *MemoryStorage) StoreRequest(request *structs.Request) error {
+	if request.CreatedAt.IsZero() {
+		request.CreatedAt = time.Now()
+	}
+	m.requests = append(m.requests, request)
+	return nil
 }
 
 func (m *MemoryStorage) GetOldestRequests(count int) ([]*structs.Request, error) {
