@@ -5,6 +5,7 @@ import (
 
 	"github.com/eliezedeck/gobase/logging"
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -23,7 +24,9 @@ func main() {
 			return
 		}
 		if c.Request().Method == http.MethodHead {
-			c.NoContent(http.StatusInternalServerError)
+			if err := c.NoContent(http.StatusInternalServerError); err != nil {
+				logging.L.Error("Error while returning NoContent for HEAD request", zap.Error(err))
+			}
 			return
 		}
 		erro := c.JSON(http.StatusInternalServerError, 500)
