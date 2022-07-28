@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/eliezedeck/gobase/logging"
+	"github.com/eliezedeck/webhook-ingestor/impl"
+	"github.com/eliezedeck/webhook-ingestor/structs"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 )
@@ -38,5 +40,31 @@ func main() {
 		}
 	}
 
+	// Setup MemoryStorage instance
+	// TODO: This will be configurable in the future
+	storage := &impl.MemoryStorage{
+		AdminPath: "/__admin__",
+	}
+
+	setupWebhookPaths(e, storage)
+
 	panic(e.Start(listen))
+}
+
+func setupWebhookPaths(e *echo.Echo, config structs.ConfigStorage) {
+	w, err := config.GetValidWebhooks()
+	if err != nil {
+		panic(err)
+	}
+
+	for _, webhook := range w {
+		webhook.RegisterWithEcho(e)
+	}
+
+	// Set up the Admin paths
+	// ---
+	e.GET("/__admin__", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Hello Admin")
+	})
+	// ---
 }
