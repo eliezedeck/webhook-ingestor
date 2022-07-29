@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strings"
+	"sync"
 
 	"github.com/eliezedeck/gobase/random"
 	"github.com/eliezedeck/gobase/validation"
@@ -48,5 +50,49 @@ func setupAdministration(e *echo.Echo, config structs.ConfigStorage, reqStore st
 		}
 
 		return web.OK(c)
+	})
+
+	// --- Requests: Replay
+	a.POST("/requests/replay", func(c echo.Context) error {
+		wreq := struct {
+			RequestId       string `json:"requestId" validate:"required"`
+			WebhookId       string `json:"webhookId" validate:"required"`
+			DeleteOnSuccess int    `json:"deleteOnSuccess"`
+		}{}
+		if _, err := validation.ValidateJSONBody(c.Request().Body, &wreq); err != nil {
+			return web.BadRequestError(c, "Invalid JSON body")
+		}
+
+		// Get the request and the webhook
+		oreq, err := reqStore.GetRequest(wreq.RequestId)
+		if err != nil {
+			return err
+		}
+		webhook, err := config.GetWebhook(wreq.WebhookId)
+		if err != nil {
+			return err
+		}
+
+		// Send the request to all the Forward URLs set in the Webhook's configuration
+		wg := &sync.WaitGroup{}
+		for _, furl := range webhook.ForwardUrls {
+			if furl.WaitTillCompletion {
+				wg.Add(1)
+			}
+			go func(furl *structs.ForwardUrl) {
+				defer func() {
+					if furl.WaitTillCompletion {
+						wg.Done()
+					}
+				}()
+
+				// Craft the request based on the saved Request instance
+				req, err := http.NewRequest(oreq.Method, furl.Url, strings.NewReader(oreq.Body))
+
+				// FIXME: implement the rest ...
+			}(furl)
+		}
+
+		return c.String(http.StatusBadRequest, "Not yet implemented")
 	})
 }

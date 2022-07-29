@@ -5,6 +5,7 @@ type ConfigStorage interface {
 	SetAdminPath(path string) error
 
 	GetValidWebhooks() ([]*Webhook, error)
+	GetWebhook(id string) (*Webhook, error)
 
 	AddWebhook(webhook *Webhook) error
 	RemoveWebhook(id string) error
