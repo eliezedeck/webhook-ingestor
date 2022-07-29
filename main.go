@@ -46,7 +46,16 @@ func main() {
 		AdminPath: "/__admin__",
 	}
 
+	// -----------
 	setupWebhookPaths(e, storage)
+
+	// -----------
+	// Set up the Admin paths
+	path, err := storage.GetAdminPath()
+	if err != nil {
+		panic(err)
+	}
+	setupAdministration(e, storage, path)
 
 	panic(e.Start(listen))
 }
@@ -60,11 +69,4 @@ func setupWebhookPaths(e *echo.Echo, config structs.ConfigStorage) {
 	for _, webhook := range w {
 		webhook.RegisterWithEcho(e)
 	}
-
-	// Set up the Admin paths
-	// ---
-	e.GET("/__admin__", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello Admin")
-	})
-	// ---
 }

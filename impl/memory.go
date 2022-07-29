@@ -36,6 +36,7 @@ func (m *MemoryStorage) AddWebhook(webhook *structs.Webhook) error {
 func (m *MemoryStorage) RemoveWebhook(id string) error {
 	for i, w := range m.webhooks {
 		if w.ID == id {
+			w.Enabled = false
 			m.webhooks = append(m.webhooks[:i], m.webhooks[i+1:]...)
 			return nil
 		}
