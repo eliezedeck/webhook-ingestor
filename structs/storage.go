@@ -16,4 +16,5 @@ type RequestsStorage interface {
 	StoreRequest(request *Request) error
 	GetOldestRequests(count int) ([]*Request, error)
 	GetNewestRequests(count int) ([]*Request, error)
+	GetRequest(id string) (*Request, error)
 }

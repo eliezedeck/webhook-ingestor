@@ -10,8 +10,10 @@ import (
 type MemoryStorage struct {
 	AdminPath string
 
-	webhooks []*structs.Webhook
-	requests []*structs.Request
+	webhooks     []*structs.Webhook
+	webhooksById map[string]*structs.Webhook
+	requests     []*structs.Request
+	requestsById map[string]*structs.Request
 }
 
 func (m *MemoryStorage) GetAdminPath() (string, error) {
@@ -27,9 +29,17 @@ func (m *MemoryStorage) GetValidWebhooks() ([]*structs.Webhook, error) {
 	return m.webhooks, nil
 }
 
+func (m *MemoryStorage) GetWebhook(id string) (*structs.Webhook, error) {
+	if w, ok := m.webhooksById[id]; ok {
+		return w, nil
+	}
+	return nil, nil
+}
+
 func (m *MemoryStorage) AddWebhook(webhook *structs.Webhook) error {
 	webhook.Enabled = true
 	m.webhooks = append(m.webhooks, webhook)
+	m.webhooksById[webhook.ID] = webhook
 	return nil
 }
 
@@ -38,6 +48,7 @@ func (m *MemoryStorage) RemoveWebhook(id string) error {
 		if w.ID == id {
 			w.Enabled = false
 			m.webhooks = append(m.webhooks[:i], m.webhooks[i+1:]...)
+			delete(m.webhooksById, id)
 			return nil
 		}
 	}
@@ -45,21 +56,17 @@ func (m *MemoryStorage) RemoveWebhook(id string) error {
 }
 
 func (m *MemoryStorage) EnableWebhook(id string) error {
-	for _, w := range m.webhooks {
-		if w.ID == id {
-			w.Enabled = true
-			return nil
-		}
+	if w, ok := m.webhooksById[id]; ok {
+		w.Enabled = true
+		return nil
 	}
 	return fmt.Errorf("webhook with id %s not found", id)
 }
 
 func (m *MemoryStorage) DisableWebhook(id string) error {
-	for _, w := range m.webhooks {
-		if w.ID == id {
-			w.Enabled = false
-			return nil
-		}
+	if w, ok := m.webhooksById[id]; ok {
+		w.Enabled = false
+		return nil
 	}
 	return fmt.Errorf("webhook with id %s not found", id)
 }
@@ -69,6 +76,7 @@ func (m *MemoryStorage) StoreRequest(request *structs.Request) error {
 		request.CreatedAt = time.Now()
 	}
 	m.requests = append(m.requests, request)
+	m.requestsById[request.ID] = request
 	return nil
 }
 
@@ -102,4 +110,11 @@ func (m *MemoryStorage) GetNewestRequests(count int) ([]*structs.Request, error)
 	}
 
 	return result, nil
+}
+
+func (m *MemoryStorage) GetRequest(id string) (*structs.Request, error) {
+	if r, ok := m.requestsById[id]; ok {
+		return r, nil
+	}
+	return nil, nil
 }
