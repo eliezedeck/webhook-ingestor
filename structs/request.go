@@ -8,6 +8,6 @@ type Request struct {
 	Path             string              `json:"path"`
 	Headers          map[string][]string `json:"headers"`
 	Body             string              `json:"body"`
-	CreatedAt        time.Time           `json:"createdAt"`
 	FailedForwardUrl *ForwardUrl         `json:"failedForwardUrl"`
+	CreatedAt        time.Time           `json:"createdAt"`
 }

@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/eliezedeck/gobase/logging"
@@ -106,11 +107,21 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 		// Forward the request to each of the ForwardUrls
 		//
 		responseErr := make(chan error, 1)
+		wg := &sync.WaitGroup{}
 		if len(w.ForwardUrls) > 0 {
 			for _, furl := range w.ForwardUrls {
+				if furl.WaitTillCompletion {
+					wg.Add(1)
+				}
+
 				go func(furl *ForwardUrl) {
 					ctx, cancel := context.WithTimeout(context.Background(), furl.Timeout)
-					defer cancel()
+					defer func() {
+						cancel()
+						if furl.WaitTillCompletion {
+							wg.Done()
+						}
+					}()
 
 					// Prepare a new request, transfer the headers
 					request, _ := http.NewRequestWithContext(ctx, w.Method, furl.Url, bytes.NewReader(body))
@@ -126,7 +137,9 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 						}
 						return
 					}
-					defer response.Body.Close()
+					defer func() {
+						_ = response.Body.Close()
+					}()
 
 					// Always fully read the body
 					fbody, err := io.ReadAll(response.Body)
@@ -166,6 +179,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 			responseErr <- web.OK(c)
 		}
 
+		wg.Wait()
 		return <-responseErr
 	})
 
