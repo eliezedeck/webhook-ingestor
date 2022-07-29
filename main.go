@@ -67,6 +67,8 @@ func setupWebhookPaths(e *echo.Echo, config structs.ConfigStorage) {
 	}
 
 	for _, webhook := range w {
-		webhook.RegisterWithEcho(e)
+		if err = webhook.RegisterWithEcho(e); err != nil {
+			panic(err)
+		}
 	}
 }
