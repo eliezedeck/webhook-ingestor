@@ -32,7 +32,6 @@ type ForwardUrl struct {
 	Timeout                time.Duration `json:"timeout"`
 	ReturnAsResponse       bool          `json:"returnAsResponse"`
 	WaitTillCompletion     bool          `json:"waitForCompletion"`
-	SavedRequests          []*Request    `json:"savedRequests"`
 }
 
 var (
@@ -90,13 +89,14 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 		saveRequest := func(furl *ForwardUrl) {
 			// Save the request
 			request := &Request{
-				ID:               random.String(11),
+				ID:               fmt.Sprintf("r-%s", random.String(11)),
 				Method:           c.Request().Method,
 				Path:             c.Request().URL.Path,
 				Headers:          c.Request().Header,
 				Body:             string(body),
 				CreatedAt:        time.Now(),
 				FailedForwardUrl: furl,
+				FromWebhookId:    w.ID,
 			}
 			if err := storage.StoreRequest(request); err != nil {
 				logging.L.Error("Error saving request", zap.Error(err), zap.String("webhookId", w.ID))

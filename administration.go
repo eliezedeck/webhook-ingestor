@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/eliezedeck/gobase/random"
@@ -10,7 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func setupAdministration(e *echo.Echo, config structs.ConfigStorage, path string) {
+func setupAdministration(e *echo.Echo, config structs.ConfigStorage, reqStore structs.RequestsStorage, path string) {
 	// TODO: Add a authentication middleware
 	a := e.Group(path)
 
@@ -22,7 +23,7 @@ func setupAdministration(e *echo.Echo, config structs.ConfigStorage, path string
 	// --- Webhook: Add
 	a.POST("/webhooks", func(c echo.Context) error {
 		webhook := &structs.Webhook{}
-		webhook.ID = random.String(11)
+		webhook.ID = fmt.Sprintf("w-%s", random.String(11))
 		webhook.Enabled = true // enabled by default
 		if _, err := validation.ValidateJSONBody(c.Request().Body, webhook); err != nil {
 			return web.BadRequestError(c, "Invalid JSON body")
@@ -33,7 +34,9 @@ func setupAdministration(e *echo.Echo, config structs.ConfigStorage, path string
 		}
 
 		// Immediately register the route so that it's available for requests
-		webhook.RegisterWithEcho(e)
+		if err := webhook.RegisterWithEcho(e, reqStore); err != nil {
+			return err // HTTP  500
+		}
 
 		return c.JSON(http.StatusOK, webhook)
 	})

@@ -9,5 +9,6 @@ type Request struct {
 	Headers          map[string][]string `json:"headers"`
 	Body             string              `json:"body"`
 	FailedForwardUrl *ForwardUrl         `json:"failedForwardUrl"`
+	FromWebhookId    string              `json:"fromWebhookId"`
 	CreatedAt        time.Time           `json:"createdAt"`
 }

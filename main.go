@@ -47,7 +47,7 @@ func main() {
 	}
 
 	// -----------
-	setupWebhookPaths(e, storage)
+	setupWebhookPaths(e, storage, storage)
 
 	// -----------
 	// Set up the Admin paths
@@ -55,19 +55,19 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	setupAdministration(e, storage, path)
+	setupAdministration(e, storage, storage, path)
 
 	panic(e.Start(listen))
 }
 
-func setupWebhookPaths(e *echo.Echo, config structs.ConfigStorage) {
+func setupWebhookPaths(e *echo.Echo, config structs.ConfigStorage, reqStore structs.RequestsStorage) {
 	w, err := config.GetValidWebhooks()
 	if err != nil {
 		panic(err)
 	}
 
 	for _, webhook := range w {
-		if err = webhook.RegisterWithEcho(e); err != nil {
+		if err = webhook.RegisterWithEcho(e, reqStore); err != nil {
 			panic(err)
 		}
 	}
