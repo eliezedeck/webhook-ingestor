@@ -1,4 +1,4 @@
-package structs
+package core
 
 import (
 	"bytes"
@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/eliezedeck/gobase/logging"
 	"github.com/eliezedeck/gobase/random"
 	"github.com/eliezedeck/gobase/web"
+	"github.com/eliezedeck/webhook-ingestor/interfaces"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 )
@@ -25,31 +25,7 @@ type Webhook struct {
 	ForwardUrls []*ForwardUrl `json:"forwardUrls"`
 }
 
-type ForwardUrl struct {
-	ID                     string        `json:"id"`
-	Url                    string        `json:"url"`
-	KeepSuccessfulRequests bool          `json:"keepSuccessfulRequests"`
-	Timeout                time.Duration `json:"timeout"`
-	ReturnAsResponse       bool          `json:"returnAsResponse"`
-	WaitTillCompletion     bool          `json:"waitForCompletion"`
-}
-
-var (
-	httpClient = &http.Client{}
-)
-
-func TransferHeaders(dest, source http.Header) {
-	for key, oheader := range source {
-		if strings.ToLower(key) == "host" {
-			continue
-		}
-		for _, h := range oheader {
-			dest.Add(key, h)
-		}
-	}
-}
-
-func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error {
+func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage interfaces.RequestsStorage) error {
 	// There must be exactly one forward url with the returnAsResponse flag set to true
 	returnAsResponseCount := 0
 	for _, furl := range w.ForwardUrls {
@@ -128,7 +104,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 					TransferHeaders(request.Header, c.Request().Header)
 
 					// Execute the request
-					response, err := httpClient.Do(request)
+					response, err := ForwardHttpClient.Do(request)
 					if err != nil {
 						// Error executing: Rebuilt request -> Forwarded host
 						saveRequest(furl)

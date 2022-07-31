@@ -9,11 +9,12 @@ import (
 	"github.com/eliezedeck/gobase/random"
 	"github.com/eliezedeck/gobase/validation"
 	"github.com/eliezedeck/gobase/web"
-	"github.com/eliezedeck/webhook-ingestor/structs"
+	"github.com/eliezedeck/webhook-ingestor/core"
+	"github.com/eliezedeck/webhook-ingestor/interfaces"
 	"github.com/labstack/echo/v4"
 )
 
-func setupAdministration(e *echo.Echo, config structs.ConfigStorage, reqStore structs.RequestsStorage, path string) {
+func setupAdministration(e *echo.Echo, config interfaces.ConfigStorage, reqStore interfaces.RequestsStorage, path string) {
 	// TODO: Add a authentication middleware
 	a := e.Group(path)
 
@@ -24,7 +25,7 @@ func setupAdministration(e *echo.Echo, config structs.ConfigStorage, reqStore st
 
 	// --- Webhook: Add
 	a.POST("/webhooks", func(c echo.Context) error {
-		webhook := &structs.Webhook{}
+		webhook := &core.Webhook{}
 		webhook.ID = fmt.Sprintf("w-%s", random.String(11))
 		webhook.Enabled = true // enabled by default
 		if _, err := validation.ValidateJSONBody(c.Request().Body, webhook); err != nil {
@@ -77,7 +78,7 @@ func setupAdministration(e *echo.Echo, config structs.ConfigStorage, reqStore st
 		if oreq == nil || webhook == nil {
 			return web.BadRequestError(c, "Invalid request or webhook")
 		}
-		var furl *structs.ForwardUrl
+		var furl *core.ForwardUrl
 		for _, furl = range webhook.ForwardUrls {
 			if furl.ID == wreq.ForwardUrlId {
 				break
@@ -92,7 +93,7 @@ func setupAdministration(e *echo.Echo, config structs.ConfigStorage, reqStore st
 		if err != nil {
 			return err // HTTP 500
 		}
-		structs.TransferHeaders(req.Header, oreq.Headers)
+		core.TransferHeaders(req.Header, oreq.Headers)
 
 		// Execute the request
 		// FIXME: centralize the HTTP client
@@ -102,7 +103,7 @@ func setupAdministration(e *echo.Echo, config structs.ConfigStorage, reqStore st
 		}
 		defer response.Body.Close()
 
-		structs.TransferHeaders(c.Response().Header(), response.Header)
+		core.TransferHeaders(c.Response().Header(), response.Header)
 		c.Response().WriteHeader(response.StatusCode)
 		if _, err = io.Copy(c.Response(), response.Body); err != nil {
 			return err // HTTP 500
