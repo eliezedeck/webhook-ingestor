@@ -38,7 +38,7 @@ var (
 	httpClient = &http.Client{}
 )
 
-func transferHeaders(dest, source http.Header) {
+func TransferHeaders(dest, source http.Header) {
 	for key, oheader := range source {
 		if strings.ToLower(key) == "host" {
 			continue
@@ -125,7 +125,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 
 					// Prepare a new request, transfer the headers
 					request, _ := http.NewRequestWithContext(ctx, w.Method, furl.Url, bytes.NewReader(body))
-					transferHeaders(request.Header, c.Request().Header)
+					TransferHeaders(request.Header, c.Request().Header)
 
 					// Execute the request
 					response, err := httpClient.Do(request)
@@ -154,7 +154,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 
 					if furl.ReturnAsResponse {
 						// Body from Forwarded host -> Webhook caller
-						transferHeaders(c.Response().Header(), response.Header)
+						TransferHeaders(c.Response().Header(), response.Header)
 						c.Response().WriteHeader(response.StatusCode)
 						_, err = c.Response().Write(fbody)
 						if err != nil {

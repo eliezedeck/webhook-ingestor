@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
-	"sync"
 
 	"github.com/eliezedeck/gobase/random"
 	"github.com/eliezedeck/gobase/validation"
@@ -54,16 +54,18 @@ func setupAdministration(e *echo.Echo, config structs.ConfigStorage, reqStore st
 
 	// --- Requests: Replay
 	a.POST("/requests/replay", func(c echo.Context) error {
+		// We only allow replay to a single Forward URL, pretty much any URL that's already registered
 		wreq := struct {
 			RequestId       string `json:"requestId" validate:"required"`
 			WebhookId       string `json:"webhookId" validate:"required"`
+			ForwardUrlId    string `json:"forwardUrlId" validate:"required"`
 			DeleteOnSuccess int    `json:"deleteOnSuccess"`
 		}{}
 		if _, err := validation.ValidateJSONBody(c.Request().Body, &wreq); err != nil {
 			return web.BadRequestError(c, "Invalid JSON body")
 		}
 
-		// Get the request and the webhook
+		// Get the request and the webhook and the selected Forward URL
 		oreq, err := reqStore.GetRequest(wreq.RequestId)
 		if err != nil {
 			return err
@@ -72,27 +74,39 @@ func setupAdministration(e *echo.Echo, config structs.ConfigStorage, reqStore st
 		if err != nil {
 			return err
 		}
-
-		// Send the request to all the Forward URLs set in the Webhook's configuration
-		wg := &sync.WaitGroup{}
-		for _, furl := range webhook.ForwardUrls {
-			if furl.WaitTillCompletion {
-				wg.Add(1)
+		if oreq == nil || webhook == nil {
+			return web.BadRequestError(c, "Invalid request or webhook")
+		}
+		var furl *structs.ForwardUrl
+		for _, furl = range webhook.ForwardUrls {
+			if furl.ID == wreq.ForwardUrlId {
+				break
 			}
-			go func(furl *structs.ForwardUrl) {
-				defer func() {
-					if furl.WaitTillCompletion {
-						wg.Done()
-					}
-				}()
-
-				// Craft the request based on the saved Request instance
-				req, err := http.NewRequest(oreq.Method, furl.Url, strings.NewReader(oreq.Body))
-
-				// FIXME: implement the rest ...
-			}(furl)
+		}
+		if furl == nil {
+			return web.BadRequestError(c, "Invalid forward URL")
 		}
 
-		return c.String(http.StatusBadRequest, "Not yet implemented")
+		// Craft the request based on the saved Request instance
+		req, err := http.NewRequest(oreq.Method, furl.Url, strings.NewReader(oreq.Body))
+		if err != nil {
+			return err // HTTP 500
+		}
+		structs.TransferHeaders(req.Header, oreq.Headers)
+
+		// Execute the request
+		// FIXME: centralize the HTTP client
+		response, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return err // HTTP 500
+		}
+		defer response.Body.Close()
+
+		structs.TransferHeaders(c.Response().Header(), response.Header)
+		c.Response().WriteHeader(response.StatusCode)
+		if _, err = io.Copy(c.Response(), response.Body); err != nil {
+			return err // HTTP 500
+		}
+		return nil // success
 	})
 }
