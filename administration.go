@@ -96,8 +96,7 @@ func setupAdministration(e *echo.Echo, config interfaces.ConfigStorage, reqStore
 		core.TransferHeaders(req.Header, oreq.Headers)
 
 		// Execute the request
-		// FIXME: centralize the HTTP client
-		response, err := http.DefaultClient.Do(req)
+		response, err := core.ForwardHttpClient.Do(req)
 		if err != nil {
 			return err // HTTP 500
 		}
