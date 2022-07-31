@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="WebhookIngestor" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="ElieZedeck-WebhookIngestor" />
+    <working_directory value="$PROJECT_DIR$" />
+    <go_parameters value="-i" />
+    <kind value="PACKAGE" />
+    <package value="github.com/eliezedeck/webhook-ingestor" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$" />
+    <output_directory value="/tmp/" />
+    <method v="2" />
+  </configuration>
+</component>
