@@ -43,9 +43,11 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 	}
 
 	e.Add(w.Method, w.Path, func(c echo.Context) error {
-		L := logging.L.Named(fmt.Sprintf("Webhook[%s:%s]", w.ID, w.Path)).
-			With(zap.Time("time", time.Now())).
-			With(zap.Any("headers", c.Request().Header))
+		reqId := fmt.Sprintf("r-%s", random.String(11))
+		L := logging.L.Named(fmt.Sprintf("Webhook[%s:%s]", w.ID, w.Path)).With(
+			zap.String("requestId", reqId),
+			zap.Time("time", time.Now()),
+			zap.Any("headers", c.Request().Header))
 
 		//
 		// Webhook has been called
@@ -71,7 +73,6 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 
 		saveRequest := func(furl *ForwardUrl) {
 			// Save the request
-			reqId := fmt.Sprintf("r-%s", random.String(11))
 			request := &Request{
 				ID:            reqId,
 				Method:        c.Request().Method,
@@ -176,7 +177,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 
 		err = <-responseErr
 		if err != nil {
-			L.Error("Unsuccessful request", zap.Error(err))
+			L.Error("Unsuccessful request: {error}", zap.Error(err))
 		}
 		return err
 	})
