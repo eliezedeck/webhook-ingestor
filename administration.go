@@ -10,11 +10,10 @@ import (
 	"github.com/eliezedeck/gobase/validation"
 	"github.com/eliezedeck/gobase/web"
 	"github.com/eliezedeck/webhook-ingestor/core"
-	"github.com/eliezedeck/webhook-ingestor/interfaces"
 	"github.com/labstack/echo/v4"
 )
 
-func setupAdministration(e *echo.Echo, config interfaces.ConfigStorage, reqStore interfaces.RequestsStorage, path string) {
+func setupAdministration(e *echo.Echo, config core.ConfigStorage, reqStore core.RequestsStorage, path string) {
 	// TODO: Add a authentication middleware
 	a := e.Group(path)
 

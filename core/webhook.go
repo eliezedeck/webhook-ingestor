@@ -12,7 +12,6 @@ import (
 	"github.com/eliezedeck/gobase/logging"
 	"github.com/eliezedeck/gobase/random"
 	"github.com/eliezedeck/gobase/web"
-	"github.com/eliezedeck/webhook-ingestor/interfaces"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 )
@@ -25,7 +24,7 @@ type Webhook struct {
 	ForwardUrls []*ForwardUrl `json:"forwardUrls"`
 }
 
-func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage interfaces.RequestsStorage) error {
+func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error {
 	// There must be exactly one forward url with the returnAsResponse flag set to true
 	returnAsResponseCount := 0
 	for _, furl := range w.ForwardUrls {

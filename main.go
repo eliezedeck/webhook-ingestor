@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/eliezedeck/gobase/logging"
+	"github.com/eliezedeck/webhook-ingestor/core"
 	"github.com/eliezedeck/webhook-ingestor/impl"
-	"github.com/eliezedeck/webhook-ingestor/interfaces"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 )
@@ -60,7 +60,7 @@ func main() {
 	panic(e.Start(listen))
 }
 
-func setupWebhookPaths(e *echo.Echo, config interfaces.ConfigStorage, reqStore interfaces.RequestsStorage) {
+func setupWebhookPaths(e *echo.Echo, config core.ConfigStorage, reqStore core.RequestsStorage) {
 	w, err := config.GetValidWebhooks()
 	if err != nil {
 		panic(err)
