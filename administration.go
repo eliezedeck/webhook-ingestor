@@ -42,8 +42,18 @@ func setupAdministration(e *echo.Echo, config core.ConfigStorage, reqStore core.
 			return web.BadRequestError(c, "Invalid JSON body")
 		}
 
-		// Set IDs for each of the new forward URLs
+		// Ensure that this Webhook doesn't already exist (using the Method and Path)
+		webhooks, err := config.GetValidWebhooks()
+		if err != nil {
+			return err // HTTP 500
+		}
+		for _, w := range webhooks {
+			if w.Method == webhook.Method && w.Path == webhook.Path {
+				return web.BadRequestError(c, "Webhook already exists")
+			}
+		}
 		for _, furl := range webhook.ForwardUrls {
+			// Set IDs for each of the new forward URLs
 			furl.ID = fmt.Sprintf("f-%s", random.String(11))
 		}
 
