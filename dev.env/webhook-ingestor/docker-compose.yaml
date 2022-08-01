@@ -1,0 +1,33 @@
+# This is for local development only
+
+version: '3.6'
+
+services:
+  seq:
+    image: datalust/seq
+    ports:
+      - 0.0.0.0:5341:80
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINPASSWORDHASH=FI33s4+PklYoclTY7o5M7/2mnUAzE1Cp7mUOWkbWb+lhsoO1rQ== # defaults to '12345678'
+    volumes:
+      - seq_data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+
+  mongodb:
+    image: mongo:5
+    ports:
+      - 0.0.0.0:27017:27017
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  seq_data:
+  mongodb_data:
