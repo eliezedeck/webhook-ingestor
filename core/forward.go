@@ -9,7 +9,7 @@ import (
 type ForwardUrl struct {
 	ID                     string        `json:"id"`
 	Url                    string        `json:"url"                      validate:"required"`
-	KeepSuccessfulRequests bool          `json:"keepSuccessfulRequests"`
+	KeepSuccessfulRequests int           `json:"keepSuccessfulRequests"`
 	Timeout                time.Duration `json:"timeout"                  validate:"required"`
 	ReturnAsResponse       int           `json:"returnAsResponse"         validate:"required"`
 	WaitTillCompletion     int           `json:"waitForCompletion"        validate:"required"`

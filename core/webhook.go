@@ -152,7 +152,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 						}
 					}
 
-					if furl.KeepSuccessfulRequests {
+					if furl.KeepSuccessfulRequests >= 1 {
 						// Save the request
 						saveRequest(furl)
 					}
