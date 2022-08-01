@@ -43,7 +43,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 	}
 
 	e.Add(w.Method, w.Path, func(c echo.Context) error {
-		reqId := fmt.Sprintf("r-%s", random.String(11))
+		reqId := fmt.Sprintf("r-%s", random.String(16))
 		L := logging.L.Named(fmt.Sprintf("Webhook[%s:%s]", w.ID, w.Path)).With(
 			zap.String("requestId", reqId),
 			zap.Time("time", time.Now()),
