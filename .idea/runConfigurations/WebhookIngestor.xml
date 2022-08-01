@@ -3,7 +3,7 @@
     <module name="ElieZedeck-WebhookIngestor" />
     <working_directory value="$PROJECT_DIR$" />
     <go_parameters value="-i" />
-    <parameters value="-path /webhook -path /play" />
+    <parameters value="-listen :8080" />
     <kind value="PACKAGE" />
     <package value="github.com/eliezedeck/webhook-ingestor" />
     <directory value="$PROJECT_DIR$" />

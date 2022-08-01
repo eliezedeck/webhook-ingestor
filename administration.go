@@ -22,6 +22,15 @@ func setupAdministration(e *echo.Echo, config core.ConfigStorage, reqStore core.
 		return c.String(http.StatusOK, "Hello Admin")
 	})
 
+	// --- Webhooks: List
+	a.GET("/webhooks", func(c echo.Context) error {
+		webhooks, err := config.GetValidWebhooks()
+		if err != nil {
+			return err // HTTP 500
+		}
+		return c.JSON(http.StatusOK, webhooks)
+	})
+
 	// --- Webhook: Add
 	a.POST("/webhooks", func(c echo.Context) error {
 		webhook := &core.Webhook{}
