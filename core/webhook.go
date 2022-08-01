@@ -19,16 +19,16 @@ import (
 type Webhook struct {
 	ID          string        `json:"id"`
 	Enabled     bool          `json:"enabled"`
-	Method      string        `json:"method"`
-	Path        string        `json:"path"`
-	ForwardUrls []*ForwardUrl `json:"forwardUrls"`
+	Method      string        `json:"method"      validate:"required"`
+	Path        string        `json:"path"        validate:"required"`
+	ForwardUrls []*ForwardUrl `json:"forwardUrls" validate:"required"`
 }
 
 func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error {
 	// There must be exactly one forward url with the returnAsResponse flag set to true
 	returnAsResponseCount := 0
 	for _, furl := range w.ForwardUrls {
-		if furl.ReturnAsResponse {
+		if furl.ReturnAsResponse >= 1 {
 			returnAsResponseCount++
 			if returnAsResponseCount > 1 {
 				logging.L.Error("Webhook has more than one forward url with returnAsResponse set to true", zap.String("id", w.ID))
@@ -94,7 +94,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 		wg := &sync.WaitGroup{}
 		if len(w.ForwardUrls) > 0 {
 			for _, furl := range w.ForwardUrls {
-				if furl.WaitTillCompletion {
+				if furl.WaitTillCompletion >= 1 {
 					wg.Add(1)
 				}
 
@@ -102,7 +102,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 					ctx, cancel := context.WithTimeout(context.Background(), furl.Timeout)
 					defer func() {
 						cancel()
-						if furl.WaitTillCompletion {
+						if furl.WaitTillCompletion >= 1 {
 							wg.Done()
 						}
 					}()
@@ -116,7 +116,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 					if err != nil {
 						// Error executing: Rebuilt request -> Forwarded host
 						saveRequest(furl)
-						if furl.ReturnAsResponse {
+						if furl.ReturnAsResponse >= 1 {
 							responseErr <- err
 						}
 						return
@@ -130,13 +130,13 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 					if err != nil {
 						// Error reading: Body <- Forwarded host
 						saveRequest(furl)
-						if furl.ReturnAsResponse {
+						if furl.ReturnAsResponse >= 1 {
 							responseErr <- err
 						}
 						return
 					}
 
-					if furl.ReturnAsResponse {
+					if furl.ReturnAsResponse >= 1 {
 						// Body from Forwarded host -> Webhook caller
 						TransferHeaders(c.Response().Header(), response.Header)
 						c.Response().WriteHeader(response.StatusCode)

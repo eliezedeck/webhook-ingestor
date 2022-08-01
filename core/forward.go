@@ -8,11 +8,11 @@ import (
 
 type ForwardUrl struct {
 	ID                     string        `json:"id"`
-	Url                    string        `json:"url"`
+	Url                    string        `json:"url"                      validate:"required"`
 	KeepSuccessfulRequests bool          `json:"keepSuccessfulRequests"`
-	Timeout                time.Duration `json:"timeout"`
-	ReturnAsResponse       bool          `json:"returnAsResponse"`
-	WaitTillCompletion     bool          `json:"waitForCompletion"`
+	Timeout                time.Duration `json:"timeout"                  validate:"required"`
+	ReturnAsResponse       int           `json:"returnAsResponse"         validate:"required"`
+	WaitTillCompletion     int           `json:"waitForCompletion"        validate:"required"`
 }
 
 var (
