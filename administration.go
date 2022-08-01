@@ -159,6 +159,14 @@ func setupAdministration(e *echo.Echo, config core.ConfigStorage, reqStore core.
 		if _, err = io.Copy(c.Response(), response.Body); err != nil {
 			return err // HTTP 500
 		}
+
+		// Should we delete the successful request?
+		if wreq.DeleteOnSuccess >= 1 {
+			if err = reqStore.DeleteRequest(wreq.RequestId); err != nil {
+				return err // HTTP 500
+			}
+		}
+
 		return nil // success
 	})
 
