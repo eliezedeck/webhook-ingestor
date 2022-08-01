@@ -129,3 +129,17 @@ func (m *MemoryStorage) GetRequest(id string) (*core.Request, error) {
 	}
 	return nil, nil
 }
+
+func (m *MemoryStorage) DeleteRequest(id string) error {
+	if _, ok := m.requestsById[id]; ok {
+		delete(m.requestsById, id)
+		for i, rr := range m.requests {
+			if rr.ID == id {
+				m.requests = append(m.requests[:i], m.requests[i+1:]...)
+				break
+			}
+		}
+		return nil
+	}
+	return fmt.Errorf("request with id %s not found", id)
+}
