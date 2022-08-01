@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/eliezedeck/gobase/logging"
 	"github.com/eliezedeck/gobase/random"
@@ -20,8 +21,14 @@ func setupAdministration(e *echo.Echo, config core.ConfigStorage, reqStore core.
 	a := e.Group(path)
 
 	// ---
-	a.GET("", func(c echo.Context) error {
+	a.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello Admin")
+	})
+
+	a.GET("/play", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"duration": 60 * time.Second,
+		})
 	})
 
 	// --- Webhooks: List
