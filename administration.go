@@ -6,11 +6,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/eliezedeck/gobase/logging"
 	"github.com/eliezedeck/gobase/random"
 	"github.com/eliezedeck/gobase/validation"
 	"github.com/eliezedeck/gobase/web"
 	"github.com/eliezedeck/webhook-ingestor/core"
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 )
 
 func setupAdministration(e *echo.Echo, config core.ConfigStorage, reqStore core.RequestsStorage, path string) {
@@ -38,6 +40,11 @@ func setupAdministration(e *echo.Echo, config core.ConfigStorage, reqStore core.
 		webhook.Enabled = true // enabled by default
 		if _, err := validation.ValidateJSONBody(c.Request().Body, webhook); err != nil {
 			return web.BadRequestError(c, "Invalid JSON body")
+		}
+
+		// Set IDs for each of the new forward URLs
+		for _, furl := range webhook.ForwardUrls {
+			furl.ID = fmt.Sprintf("f-%s", random.String(11))
 		}
 
 		if err := config.AddWebhook(webhook); err != nil {
@@ -117,4 +124,6 @@ func setupAdministration(e *echo.Echo, config core.ConfigStorage, reqStore core.
 		}
 		return nil // success
 	})
+
+	logging.L.Info("Administration setup complete", zap.String("path", path))
 }
