@@ -2,7 +2,7 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - name: Setup
+  - name: Setup & Services
     init: |
       go mod download
 
@@ -37,11 +37,6 @@ tasks:
 
   - name: Warm-up & Reminder
     command: |
-      # Warm-up the compiler
-      pushd src/cmd/microservices/kyc
-      go build -o /dev/null .
-      popd
-
       sudo apt-get update
 
       clear
