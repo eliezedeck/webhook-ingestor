@@ -1,0 +1,71 @@
+image:
+  file: .gitpod.Dockerfile
+
+tasks:
+  - name: Setup
+    init: |
+      go mod download
+
+    command: |
+      # Longer git credential cache
+      git config --global credential.helper 'cache --timeout=36000'
+
+      # RabbitMQ
+      pushd dev.env
+      docker-compose up -d
+      popd
+
+      gp sync-done setup
+      exit
+
+  - name: Tailscale daemon
+    command: |
+      if [ -n "${TAILSCALE_STATE_WEBHOOK_INGESTOR}" ]; then
+        sudo mkdir -p /var/lib/tailscale
+        echo "${TAILSCALE_STATE_WEBHOOK_INGESTOR}" | sudo tee /var/lib/tailscale/tailscaled.state > /dev/null
+      fi
+      sudo tailscaled
+  - name: Tailscale
+    command: |
+      if [ -n "${TAILSCALE_STATE_WEBHOOK_INGESTOR}" ]; then
+        sudo -E tailscale up
+      else
+        sudo -E tailscale up --hostname "gitpod-webhook-ingestor"
+        gp env TAILSCALE_STATE_WEBHOOK_INGESTOR="$(sudo cat /var/lib/tailscale/tailscaled.state)"
+      fi
+      exit
+
+  - name: Warm-up & Reminder
+    command: |
+      # Warm-up the compiler
+      pushd src/cmd/microservices/kyc
+      go build -o /dev/null .
+      popd
+
+      sudo apt-get update
+
+      clear
+      echo
+      echo
+      echo
+      echo "- Please install the Static Checking tool which is at the bottom of VSCode"
+      echo "- Browser: Disable the Back button"
+
+ports:
+  - name: SEQ UI & Ingestion
+    port: 5341
+
+  - name: Webhook Ingestor
+    port: 8000
+    visibility: public
+
+vscode:
+  extensions:
+    - golang.go
+
+    - akosyakov.gitpod-monitor
+    - ms-kubernetes-tools.vscode-kubernetes-tools
+    - mhutchie.git-graph
+    - ms-azuretools.vscode-docker
+#
+# See https://www.gitpod.io/docs/references/gitpod-yml for reference
