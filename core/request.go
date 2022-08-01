@@ -11,4 +11,6 @@ type Request struct {
 	ForwardUrl    *ForwardUrl         `json:"forwardUrl"`
 	FromWebhookId string              `json:"fromWebhookId"`
 	CreatedAt     time.Time           `json:"createdAt"`
+
+	ReplayPayload *Replay `json:"replayPayload"`
 }
