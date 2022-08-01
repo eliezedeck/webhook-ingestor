@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -83,6 +84,25 @@ func setupAdministration(e *echo.Echo, config core.ConfigStorage, reqStore core.
 		}
 
 		return web.OK(c)
+	})
+
+	a.GET("/requests/newest", func(c echo.Context) error {
+		var err error
+
+		count := uint64(100)
+		countStr := strings.TrimSpace(c.QueryParam("count"))
+		if countStr != "" {
+			count, err = strconv.ParseUint(countStr, 10, 64)
+			if err != nil {
+				return web.BadRequestError(c, "Invalid count parameter")
+			}
+		}
+
+		requests, err := reqStore.GetNewestRequests(int(count))
+		if err != nil {
+			return err // HTTP 500
+		}
+		return c.JSON(http.StatusOK, requests)
 	})
 
 	// --- Requests: Replay

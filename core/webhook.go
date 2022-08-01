@@ -72,14 +72,14 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 		saveRequest := func(furl *ForwardUrl) {
 			// Save the request
 			request := &Request{
-				ID:               fmt.Sprintf("r-%s", random.String(11)),
-				Method:           c.Request().Method,
-				Path:             c.Request().URL.Path,
-				Headers:          c.Request().Header,
-				Body:             string(body),
-				CreatedAt:        time.Now(),
-				FailedForwardUrl: furl,
-				FromWebhookId:    w.ID,
+				ID:            fmt.Sprintf("r-%s", random.String(11)),
+				Method:        c.Request().Method,
+				Path:          c.Request().URL.Path,
+				Headers:       c.Request().Header,
+				Body:          string(body),
+				CreatedAt:     time.Now(),
+				ForwardUrl:    furl,
+				FromWebhookId: w.ID,
 			}
 			if err := storage.StoreRequest(request); err != nil {
 				L.Error("Error saving request", zap.Error(err), zap.String("webhookId", w.ID))
