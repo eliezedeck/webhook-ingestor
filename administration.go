@@ -108,12 +108,7 @@ func setupAdministration(e *echo.Echo, config core.ConfigStorage, reqStore core.
 	// --- Requests: Replay
 	a.POST("/requests/replay", func(c echo.Context) error {
 		// We only allow replay to a single Forward URL, pretty much any URL that's already registered
-		wreq := struct {
-			RequestId       string `json:"requestId" validate:"required"`
-			WebhookId       string `json:"webhookId" validate:"required"`
-			ForwardUrlId    string `json:"forwardUrlId" validate:"required"`
-			DeleteOnSuccess int    `json:"deleteOnSuccess"`
-		}{}
+		wreq := core.Replay{}
 		if _, err := validation.ValidateJSONBody(c.Request().Body, &wreq); err != nil {
 			return web.BadRequestError(c, "Invalid JSON body")
 		}
