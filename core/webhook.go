@@ -18,10 +18,11 @@ import (
 
 type Webhook struct {
 	ID          string        `json:"id"`
+	Name        string        `json:"name"         validate:"required"`
 	Enabled     bool          `json:"enabled"`
-	Method      string        `json:"method"      validate:"required"`
-	Path        string        `json:"path"        validate:"required"`
-	ForwardUrls []*ForwardUrl `json:"forwardUrls" validate:"required"`
+	Method      string        `json:"method"       validate:"required"`
+	Path        string        `json:"path"         validate:"required"`
+	ForwardUrls []*ForwardUrl `json:"forwardUrls"  validate:"required"`
 }
 
 func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error {
@@ -172,6 +173,10 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 		return err
 	})
 
-	logging.L.Info(fmt.Sprintf("Registered webhook: %s %s", w.Method, w.Path), zap.String("id", w.ID))
+	logging.L.Info("New Webhook has been registered: {method} {path} — {name}",
+		zap.String("id", w.ID),
+		zap.String("method", w.Method),
+		zap.String("path", w.Path),
+		zap.String("name", w.Name))
 	return nil
 }
