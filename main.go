@@ -42,9 +42,7 @@ func main() {
 
 	// Setup MemoryStorage instance
 	// TODO: This will be configurable in the future
-	storage := &impl.MemoryStorage{
-		AdminPath: "/__admin__",
-	}
+	storage := impl.NewMemoryStorage("__admin__")
 
 	// -----------
 	setupWebhookPaths(e, storage, storage)

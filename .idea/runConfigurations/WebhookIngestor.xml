@@ -4,6 +4,9 @@
     <working_directory value="$PROJECT_DIR$" />
     <go_parameters value="-i" />
     <parameters value="-listen :8080" />
+    <envs>
+      <env name="SEQ_URL" value="http://gitpod-webhook-ingestor:5341" />
+    </envs>
     <kind value="PACKAGE" />
     <package value="github.com/eliezedeck/webhook-ingestor" />
     <directory value="$PROJECT_DIR$" />

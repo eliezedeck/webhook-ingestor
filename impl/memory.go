@@ -17,6 +17,16 @@ type MemoryStorage struct {
 	requestsById map[string]*core.Request
 }
 
+func NewMemoryStorage(adminPath string) *MemoryStorage {
+	return &MemoryStorage{
+		AdminPath:    adminPath,
+		webhooks:     make([]*core.Webhook, 0, 16),
+		webhooksById: make(map[string]*core.Webhook, 16),
+		requests:     make([]*core.Request, 0, 256),
+		requestsById: make(map[string]*core.Request, 256),
+	}
+}
+
 func (m *MemoryStorage) GetAdminPath() (string, error) {
 	return m.AdminPath, nil
 }
