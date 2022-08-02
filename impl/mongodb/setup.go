@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/eliezedeck/gobase/logging"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -31,6 +32,7 @@ func NewStorage(uri, dbname string) (*Storage, error) {
 	}
 
 	db := client.Database(dbname)
+	logging.L.Info("Connected to MongoDB")
 
 	// Setup collections and their indexes (if any)
 	//
@@ -45,7 +47,7 @@ func NewStorage(uri, dbname string) (*Storage, error) {
 	}
 
 	collWebhooks := db.Collection("webhooks")
-	if err := setupIndex(collRequests, IndexDefinition{
+	if err := setupIndex(collWebhooks, IndexDefinition{
 		Fields: []IndexField{
 			{Name: "enabled", Order: OrderASC},
 		},
@@ -53,7 +55,7 @@ func NewStorage(uri, dbname string) (*Storage, error) {
 	}, false); err != nil {
 		return nil, err
 	}
-	if err := setupIndex(collRequests, IndexDefinition{
+	if err := setupIndex(collWebhooks, IndexDefinition{
 		Fields: []IndexField{
 			{Name: "createdAt", Order: OrderASC},
 		},
@@ -61,6 +63,7 @@ func NewStorage(uri, dbname string) (*Storage, error) {
 	}, false); err != nil {
 		return nil, err
 	}
+	logging.L.Info("Indexes are set up, database is ready")
 
 	return &Storage{
 		client:       client,

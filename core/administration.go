@@ -21,7 +21,7 @@ import (
 
 func SetupAdministration(e *echo.Echo, config ConfigStorage, reqStore RequestsStorage, path string) {
 	a := e.Group(path, middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
-		if subtle.ConstantTimeCompare([]byte(username), []byte(parameters.ParamAdminUsername)) != 1 && subtle.ConstantTimeCompare([]byte(password), []byte(parameters.ParamAdminPassword)) != 1 {
+		if subtle.ConstantTimeCompare([]byte(username), []byte(parameters.ParamAdminUsername)) == 1 && subtle.ConstantTimeCompare([]byte(password), []byte(parameters.ParamAdminPassword)) == 1 {
 			return true, nil
 		}
 		return false, nil

@@ -22,7 +22,7 @@ func (m *Storage) GetOldestRequests(count int) ([]*core.Request, error) {
 		return nil, err
 	}
 
-	var requests []*core.Request
+	requests := make([]*core.Request, 0, count)
 	if err := cur.All(context.Background(), &requests); err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func (m *Storage) GetNewestRequests(count int) ([]*core.Request, error) {
 		return nil, err
 	}
 
-	var requests []*core.Request
+	requests := make([]*core.Request, 0, count)
 	if err := cur.All(context.Background(), &requests); err != nil {
 		return nil, err
 	}

@@ -16,7 +16,7 @@ func (m *Storage) GetValidWebhooks() ([]*core.Webhook, error) {
 		return nil, err
 	}
 
-	var webhooks []*core.Webhook
+	webhooks := make([]*core.Webhook, 0, 10)
 	if err := cur.All(context.Background(), &webhooks); err != nil {
 		return nil, err
 	}

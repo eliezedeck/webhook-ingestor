@@ -57,7 +57,7 @@ func main() {
 		a := buildEcho()
 		core.SetupAdministration(a, configStorage, reqStorage, parameters.ParamAdminPath)
 		go func() {
-			panic(a.Start(parameters.ParamListen))
+			panic(a.Start(parameters.ParamAdminListen))
 		}()
 	}
 	panic(e.Start(parameters.ParamListen))
