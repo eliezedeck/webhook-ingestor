@@ -52,10 +52,10 @@ func main() {
 	// -----------
 	// Set up the Admin paths
 	if parameters.ParamListen == parameters.ParamAdminListen {
-		core.SetupAdministration(e, configStorage, reqStorage, parameters.ParamAdminPath)
+		core.SetupAdministration(e, e, configStorage, reqStorage, parameters.ParamAdminPath)
 	} else {
 		a := buildEcho()
-		core.SetupAdministration(a, configStorage, reqStorage, parameters.ParamAdminPath)
+		core.SetupAdministration(e, a, configStorage, reqStorage, parameters.ParamAdminPath)
 		go func() {
 			panic(a.Start(parameters.ParamAdminListen))
 		}()

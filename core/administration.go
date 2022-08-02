@@ -19,8 +19,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func SetupAdministration(e *echo.Echo, config ConfigStorage, reqStore RequestsStorage, path string) {
-	a := e.Group(path, middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
+func SetupAdministration(echoForWebhooks, echoForAdmin *echo.Echo, config ConfigStorage, reqStore RequestsStorage, path string) {
+	a := echoForAdmin.Group(path, middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
 		if subtle.ConstantTimeCompare([]byte(username), []byte(parameters.ParamAdminUsername)) == 1 && subtle.ConstantTimeCompare([]byte(password), []byte(parameters.ParamAdminPassword)) == 1 {
 			return true, nil
 		}
@@ -71,7 +71,7 @@ func SetupAdministration(e *echo.Echo, config ConfigStorage, reqStore RequestsSt
 		}
 
 		// Immediately register the route so that it's available for requests
-		if err := webhook.RegisterWithEcho(e, reqStore); err != nil {
+		if err := webhook.RegisterWithEcho(echoForWebhooks, reqStore); err != nil {
 			return err // HTTP  500
 		}
 
