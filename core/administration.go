@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/eliezedeck/gobase/logging"
 	"github.com/eliezedeck/gobase/random"
@@ -45,6 +46,7 @@ func SetupAdministration(e *echo.Echo, config ConfigStorage, reqStore RequestsSt
 		webhook := &Webhook{}
 		webhook.ID = fmt.Sprintf("w-%s", random.String(11))
 		webhook.Enabled = true // enabled by default
+		webhook.CreatedAt = time.Now()
 		if _, err := validation.ValidateJSONBody(c.Request().Body, webhook); err != nil {
 			return web.BadRequestError(c, "Invalid JSON body")
 		}

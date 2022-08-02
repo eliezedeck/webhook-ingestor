@@ -23,6 +23,8 @@ type Webhook struct {
 	Method      string        `json:"method"       validate:"required"`
 	Path        string        `json:"path"         validate:"required"`
 	ForwardUrls []*ForwardUrl `json:"forwardUrls"  validate:"required"`
+
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error {
