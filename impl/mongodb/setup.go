@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/eliezedeck/webhook-ingestor/core"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -38,7 +37,7 @@ func NewStorage(uri, dbname string) (*Storage, error) {
 	collRequests := db.Collection("requests")
 	if err := setupIndex(collRequests, IndexDefinition{
 		Fields: []IndexField{
-			{Name: "createdAt", Order: OrderASC},
+			{Name: "createdAt", Order: OrderDESC},
 		},
 		Name: "date",
 	}, false); err != nil {
@@ -46,6 +45,22 @@ func NewStorage(uri, dbname string) (*Storage, error) {
 	}
 
 	collWebhooks := db.Collection("webhooks")
+	if err := setupIndex(collRequests, IndexDefinition{
+		Fields: []IndexField{
+			{Name: "enabled", Order: OrderASC},
+		},
+		Name: "enabled",
+	}, false); err != nil {
+		return nil, err
+	}
+	if err := setupIndex(collRequests, IndexDefinition{
+		Fields: []IndexField{
+			{Name: "createdAt", Order: OrderASC},
+		},
+		Name: "date",
+	}, false); err != nil {
+		return nil, err
+	}
 
 	return &Storage{
 		client:       client,
@@ -55,22 +70,14 @@ func NewStorage(uri, dbname string) (*Storage, error) {
 	}, nil
 }
 
-func (m *Storage) StoreRequest(request *core.Request) error {
-	collection := m.db.Collection("requests")
-	_, err := collection.InsertOne(context.Background(), request)
-	return err
-}
-
-type IndexFieldOrdering int
-
 type IndexField struct {
 	Name  string
-	Order IndexFieldOrdering
+	Order int
 }
 
 const (
-	OrderASC  IndexFieldOrdering = 1
-	OrderDESC IndexFieldOrdering = -1
+	OrderASC  int = 1
+	OrderDESC int = -1
 )
 
 type IndexDefinition struct {
