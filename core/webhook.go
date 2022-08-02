@@ -17,7 +17,7 @@ import (
 )
 
 type Webhook struct {
-	ID          string        `json:"id"`
+	ID          string        `json:"id" bson:"_id"`
 	Name        string        `json:"name"         validate:"required"`
 	Enabled     bool          `json:"enabled"`
 	Method      string        `json:"method"       validate:"required"`

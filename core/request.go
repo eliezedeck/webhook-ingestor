@@ -3,7 +3,7 @@ package core
 import "time"
 
 type Request struct {
-	ID            string              `json:"id"`
+	ID            string              `json:"id" bson:"_id"`
 	Method        string              `json:"method"`
 	Path          string              `json:"path"`
 	Headers       map[string][]string `json:"headers"`

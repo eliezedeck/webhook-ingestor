@@ -7,7 +7,7 @@ import (
 )
 
 type ForwardUrl struct {
-	ID                     string        `json:"id"`
+	ID                     string        `json:"id" bson:"_id"`
 	Url                    string        `json:"url"                      validate:"required"`
 	KeepSuccessfulRequests int           `json:"keepSuccessfulRequests"`
 	Timeout                time.Duration `json:"timeout"                  validate:"required"`
