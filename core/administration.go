@@ -1,34 +1,34 @@
 package core
 
 import (
+	"crypto/subtle"
 	"fmt"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/eliezedeck/gobase/logging"
 	"github.com/eliezedeck/gobase/random"
 	"github.com/eliezedeck/gobase/validation"
 	"github.com/eliezedeck/gobase/web"
+	"github.com/eliezedeck/webhook-ingestor/parameters"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
 )
 
 func SetupAdministration(e *echo.Echo, config ConfigStorage, reqStore RequestsStorage, path string) {
-	// TODO: Add a authentication middleware
-	a := e.Group(path)
+	a := e.Group(path, middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
+		if subtle.ConstantTimeCompare([]byte(username), []byte(parameters.ParamAdminUsername)) != 1 && subtle.ConstantTimeCompare([]byte(password), []byte(parameters.ParamAdminPassword)) != 1 {
+			return true, nil
+		}
+		return false, nil
+	}))
 
 	// ---
 	a.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello Admin")
-	})
-
-	a.GET("/play", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"duration": 60 * time.Second,
-		})
 	})
 
 	// --- Webhooks: List

@@ -20,6 +20,30 @@ func main() {
 	parameters.ParseFlags()
 
 	// Setup Web server (using Echo)
+	e := buildEcho()
+
+	// Setup MemoryStorage instance
+	// TODO: This will be configurable in the future
+	storage := impl.NewMemoryStorage()
+
+	// -----------
+	setupWebhookPaths(e, storage, storage)
+
+	// -----------
+	// Set up the Admin paths
+	if parameters.ParamListen == parameters.ParamAdminListen {
+		core.SetupAdministration(e, storage, storage, parameters.ParamAdminPath)
+	} else {
+		a := buildEcho()
+		core.SetupAdministration(a, storage, storage, parameters.ParamAdminPath)
+		go func() {
+			panic(a.Start(parameters.ParamListen))
+		}()
+	}
+	panic(e.Start(parameters.ParamListen))
+}
+
+func buildEcho() *echo.Echo {
 	e := echo.New()
 	e.HidePort = true
 	e.HideBanner = true
@@ -40,23 +64,7 @@ func main() {
 			e.Logger.Error(erro)
 		}
 	}
-
-	// Setup MemoryStorage instance
-	// TODO: This will be configurable in the future
-	storage := impl.NewMemoryStorage("__admin__")
-
-	// -----------
-	setupWebhookPaths(e, storage, storage)
-
-	// -----------
-	// Set up the Admin paths
-	path, err := storage.GetAdminPath()
-	if err != nil {
-		panic(err)
-	}
-	core.SetupAdministration(e, storage, storage, path)
-
-	panic(e.Start(parameters.ParamListen))
+	return e
 }
 
 func setupWebhookPaths(e *echo.Echo, config core.ConfigStorage, reqStore core.RequestsStorage) {

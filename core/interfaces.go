@@ -1,9 +1,6 @@
 package core
 
 type ConfigStorage interface {
-	GetAdminPath() (string, error)
-	SetAdminPath(path string) error
-
 	GetValidWebhooks() ([]*Webhook, error)
 	GetWebhook(id string) (*Webhook, error)
 

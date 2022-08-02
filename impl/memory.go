@@ -9,31 +9,19 @@ import (
 
 // MemoryStorage implements both ConfigStorage and RequestsStorage
 type MemoryStorage struct {
-	AdminPath string
-
 	webhooks     []*core.Webhook
 	webhooksById map[string]*core.Webhook
 	requests     []*core.Request
 	requestsById map[string]*core.Request
 }
 
-func NewMemoryStorage(adminPath string) *MemoryStorage {
+func NewMemoryStorage() *MemoryStorage {
 	return &MemoryStorage{
-		AdminPath:    adminPath,
 		webhooks:     make([]*core.Webhook, 0, 16),
 		webhooksById: make(map[string]*core.Webhook, 16),
 		requests:     make([]*core.Request, 0, 256),
 		requestsById: make(map[string]*core.Request, 256),
 	}
-}
-
-func (m *MemoryStorage) GetAdminPath() (string, error) {
-	return m.AdminPath, nil
-}
-
-func (m *MemoryStorage) SetAdminPath(path string) error {
-	m.AdminPath = path
-	return nil
 }
 
 func (m *MemoryStorage) GetValidWebhooks() ([]*core.Webhook, error) {

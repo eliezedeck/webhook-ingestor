@@ -9,6 +9,7 @@ var (
 	ParamAdminListen   = ":8081"
 	ParamAdminUsername = "admin"
 	ParamAdminPassword = "admin"
+	ParamAdminPath     = "__admin__"
 )
 
 func ParseFlags() {
@@ -16,5 +17,6 @@ func ParseFlags() {
 	flag.StringVar(&ParamAdminListen, "admin-listen", ParamAdminListen, "Address to listen as HTTP server, for administration; defaults to :8081")
 	flag.StringVar(&ParamAdminUsername, "username", ParamAdminUsername, "Username for admin; defaults to 'admin'")
 	flag.StringVar(&ParamAdminPassword, "password", ParamAdminPassword, "Password for admin; defaults to 'admin'")
+	flag.StringVar(&ParamAdminPath, "admin-path", ParamAdminPath, "Path for admin; defaults to '__admin__'")
 	flag.Parse()
 }
