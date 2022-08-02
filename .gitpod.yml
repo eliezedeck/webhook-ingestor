@@ -62,6 +62,5 @@ vscode:
     - ms-kubernetes-tools.vscode-kubernetes-tools
     - mhutchie.git-graph
     - ms-azuretools.vscode-docker
-    - rangav.vscode-thunder-client
 #
 # See https://www.gitpod.io/docs/references/gitpod-yml for reference
