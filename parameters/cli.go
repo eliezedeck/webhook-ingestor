@@ -18,7 +18,7 @@ var (
 
 	ParamStorage         = "memory"
 	ParamStorageMongoUri = "mongodb://localhost:27017"
-	ParamStorageMongoDb  = "webhook-ingestor"
+	ParamStorageMongoDb  = "WebhookIngestor"
 )
 
 func ParseFlags() {
