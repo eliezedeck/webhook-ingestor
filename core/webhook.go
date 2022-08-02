@@ -89,7 +89,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 					RequestId:       reqId,
 					WebhookId:       w.ID,
 					ForwardUrlId:    furl.ID,
-					DeleteOnSuccess: 1,
+					DeleteOnSuccess: 0,
 				},
 			}
 			if err := storage.StoreRequest(request); err != nil {
