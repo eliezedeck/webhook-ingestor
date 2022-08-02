@@ -87,6 +87,7 @@ func SetupAdministration(e *echo.Echo, config ConfigStorage, reqStore RequestsSt
 		return web.OK(c)
 	})
 
+	// --- Requests: List from newest
 	a.GET("/requests/newest", func(c echo.Context) error {
 		var err error
 
@@ -97,9 +98,35 @@ func SetupAdministration(e *echo.Echo, config ConfigStorage, reqStore RequestsSt
 			if err != nil {
 				return web.BadRequestError(c, "Invalid count parameter")
 			}
+			if count > 1000 {
+				return web.BadRequestError(c, "Count parameter must be less than 1000")
+			}
 		}
 
 		requests, err := reqStore.GetNewestRequests(int(count))
+		if err != nil {
+			return err // HTTP 500
+		}
+		return c.JSON(http.StatusOK, requests)
+	})
+
+	// --- Requests: List from oldest
+	a.GET("/requests/oldest", func(c echo.Context) error {
+		var err error
+
+		count := uint64(100)
+		countStr := strings.TrimSpace(c.QueryParam("count"))
+		if countStr != "" {
+			count, err = strconv.ParseUint(countStr, 10, 64)
+			if err != nil {
+				return web.BadRequestError(c, "Invalid count parameter")
+			}
+			if count > 1000 {
+				return web.BadRequestError(c, "Count parameter must be less than 1000")
+			}
+		}
+
+		requests, err := reqStore.GetOldestRequests(int(count))
 		if err != nil {
 			return err // HTTP 500
 		}
@@ -164,6 +191,14 @@ func SetupAdministration(e *echo.Echo, config ConfigStorage, reqStore RequestsSt
 		}
 
 		return nil // success
+	})
+
+	// --- Requests: Delete by ID
+	a.DELETE("/requests/:id", func(c echo.Context) error {
+		if err := reqStore.DeleteRequest(c.Param("id")); err != nil {
+			return web.Error(c, err.Error())
+		}
+		return web.OK(c)
 	})
 
 	logging.L.Info("Administration setup complete", zap.String("path", path))
