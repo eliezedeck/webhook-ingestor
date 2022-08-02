@@ -184,7 +184,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 		return err
 	})
 
-	logging.L.Info("New Webhook has been registered: {method} {path} — {name}",
+	logging.L.Info("Webhook has been registered: {method} {path} — {name}",
 		zap.String("id", w.ID),
 		zap.String("method", w.Method),
 		zap.String("path", w.Path),
