@@ -6,6 +6,7 @@ import (
 	"github.com/eliezedeck/gobase/logging"
 	"github.com/eliezedeck/webhook-ingestor/core"
 	"github.com/eliezedeck/webhook-ingestor/impl"
+	"github.com/eliezedeck/webhook-ingestor/parameters"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 )
@@ -16,7 +17,7 @@ func main() {
 	logging.L = logging.L.Named("WebhookIngestor")
 
 	// ... can exit here if user is doing `-help`
-	parseFlags()
+	parameters.ParseFlags()
 
 	// Setup Web server (using Echo)
 	e := echo.New()
@@ -53,9 +54,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	setupAdministration(e, storage, storage, path)
+	core.SetupAdministration(e, storage, storage, path)
 
-	panic(e.Start(listen))
+	panic(e.Start(parameters.ParamListen))
 }
 
 func setupWebhookPaths(e *echo.Echo, config core.ConfigStorage, reqStore core.RequestsStorage) {

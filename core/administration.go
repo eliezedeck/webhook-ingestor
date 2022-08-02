@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"fmt"
@@ -12,12 +12,11 @@ import (
 	"github.com/eliezedeck/gobase/random"
 	"github.com/eliezedeck/gobase/validation"
 	"github.com/eliezedeck/gobase/web"
-	"github.com/eliezedeck/webhook-ingestor/core"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 )
 
-func setupAdministration(e *echo.Echo, config core.ConfigStorage, reqStore core.RequestsStorage, path string) {
+func SetupAdministration(e *echo.Echo, config ConfigStorage, reqStore RequestsStorage, path string) {
 	// TODO: Add a authentication middleware
 	a := e.Group(path)
 
@@ -43,7 +42,7 @@ func setupAdministration(e *echo.Echo, config core.ConfigStorage, reqStore core.
 
 	// --- Webhook: Add
 	a.POST("/webhooks", func(c echo.Context) error {
-		webhook := &core.Webhook{}
+		webhook := &Webhook{}
 		webhook.ID = fmt.Sprintf("w-%s", random.String(11))
 		webhook.Enabled = true // enabled by default
 		if _, err := validation.ValidateJSONBody(c.Request().Body, webhook); err != nil {
@@ -108,7 +107,7 @@ func setupAdministration(e *echo.Echo, config core.ConfigStorage, reqStore core.
 	// --- Requests: Replay
 	a.POST("/requests/replay", func(c echo.Context) error {
 		// We only allow replay to a single Forward URL, pretty much any URL that's already registered
-		wreq := core.Replay{}
+		wreq := Replay{}
 		if _, err := validation.ValidateJSONBody(c.Request().Body, &wreq); err != nil {
 			return web.BadRequestError(c, "Invalid JSON body")
 		}
@@ -125,7 +124,7 @@ func setupAdministration(e *echo.Echo, config core.ConfigStorage, reqStore core.
 		if oreq == nil || webhook == nil {
 			return web.BadRequestError(c, "Invalid request or webhook")
 		}
-		var furl *core.ForwardUrl
+		var furl *ForwardUrl
 		for _, furl = range webhook.ForwardUrls {
 			if furl.ID == wreq.ForwardUrlId {
 				break
@@ -140,16 +139,16 @@ func setupAdministration(e *echo.Echo, config core.ConfigStorage, reqStore core.
 		if err != nil {
 			return err // HTTP 500
 		}
-		core.TransferHeaders(req.Header, oreq.Headers)
+		TransferHeaders(req.Header, oreq.Headers)
 
 		// Execute the request
-		response, err := core.ForwardHttpClient.Do(req)
+		response, err := ForwardHttpClient.Do(req)
 		if err != nil {
 			return err // HTTP 500
 		}
 		defer response.Body.Close()
 
-		core.TransferHeaders(c.Response().Header(), response.Header)
+		TransferHeaders(c.Response().Header(), response.Header)
 		c.Response().WriteHeader(response.StatusCode)
 		if _, err = io.Copy(c.Response(), response.Body); err != nil {
 			return err // HTTP 500
