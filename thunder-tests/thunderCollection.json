@@ -1,0 +1,27 @@
+[
+  {
+    "_id": "eb68826e-604b-4cee-83b8-16fbe79a648d",
+    "colName": "Webhook",
+    "created": "2022-08-02T13:37:23.286Z",
+    "sortNum": 10000,
+    "folders": []
+  },
+  {
+    "_id": "cda07cad-8724-4ca8-80ec-41808e675b4b",
+    "colName": "Admin",
+    "created": "2022-08-02T13:37:27.648Z",
+    "sortNum": 20000,
+    "folders": [],
+    "settings": {
+      "headers": [],
+      "auth": {
+        "type": "basic",
+        "basic": {
+          "username": "{{AdminUsername}}",
+          "password": "{{AdminPassword}}"
+        }
+      },
+      "tests": []
+    }
+  }
+]
