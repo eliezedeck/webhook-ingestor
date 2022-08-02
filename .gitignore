@@ -16,3 +16,4 @@
 
 # IDE files
 .idea/runConfigurations/WebhookIngestor.xml
+.env

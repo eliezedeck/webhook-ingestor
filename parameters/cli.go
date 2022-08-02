@@ -2,6 +2,10 @@ package parameters
 
 import (
 	"flag"
+	"os"
+
+	"github.com/eliezedeck/gobase/logging"
+	"go.uber.org/zap"
 )
 
 var (
@@ -27,4 +31,9 @@ func ParseFlags() {
 	flag.StringVar(&ParamStorageMongoUri, "mongo-uri", ParamStorageMongoUri, "MongoDB URI; defaults to 'mongodb://localhost:27017'")
 	flag.StringVar(&ParamStorageMongoDb, "mongo-db", ParamStorageMongoDb, "MongoDB database to use; defaults to 'webhook-ingestor'")
 	flag.Parse()
+
+	if ParamStorageMongoUri == "MONGO_URI" {
+		ParamStorageMongoUri = os.Getenv("MONGO_URI")
+		logging.L.Info("Using MONGO_URI from the environment", zap.String("uri", ParamStorageMongoUri))
+	}
 }
