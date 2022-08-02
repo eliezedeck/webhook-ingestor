@@ -8,6 +8,7 @@ type ConfigStorage interface {
 	RemoveWebhook(id string) error
 	EnableWebhook(id string) error
 	DisableWebhook(id string) error
+	UpdateWebhook(webhook *Webhook) error
 }
 
 type RequestsStorage interface {

@@ -2,7 +2,9 @@ package mongodbimpl
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/eliezedeck/gobase/random"
 	"github.com/eliezedeck/webhook-ingestor/core"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -49,5 +51,37 @@ func (m *Storage) EnableWebhook(id string) error {
 
 func (m *Storage) DisableWebhook(id string) error {
 	_, err := m.collWebhooks.UpdateOne(context.Background(), bson.D{{"_id", id}}, bson.D{{"$set", bson.D{{"enabled", false}}}})
+	return err
+}
+
+func (m *Storage) UpdateWebhook(webhook *core.Webhook) error {
+	existing, err := m.GetWebhook(webhook.ID)
+	if err != nil {
+		return err
+	}
+	if existing == nil {
+		return fmt.Errorf("webhook with id %s not found", webhook.ID)
+	}
+
+	// Disallow mutation of certain fields
+	if webhook.Path != existing.Path {
+		return fmt.Errorf("cannot update Webhook Path")
+	}
+	if webhook.Method != existing.Method {
+		return fmt.Errorf("cannot update Webhook Method")
+	}
+
+	// Update the rest of the fields
+	existing.Name = webhook.Name
+	existing.Enabled = webhook.Enabled
+	for _, f := range webhook.ForwardUrls {
+		if f.ID == "" {
+			// New forward URL, generate a random ID
+			f.ID = random.String(8)
+		}
+	}
+	existing.ForwardUrls = webhook.ForwardUrls
+
+	_, err = m.collWebhooks.UpdateOne(context.Background(), bson.D{{"_id", webhook.ID}}, bson.D{{"$set", existing}})
 	return err
 }

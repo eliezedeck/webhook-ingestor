@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/eliezedeck/gobase/random"
 	"github.com/eliezedeck/webhook-ingestor/core"
 )
 
@@ -68,6 +69,33 @@ func (m *MemoryStorage) DisableWebhook(id string) error {
 		return nil
 	}
 	return fmt.Errorf("webhook with id %s not found", id)
+}
+
+func (m *MemoryStorage) UpdateWebhook(webhook *core.Webhook) error {
+	if w, ok := m.webhooksById[webhook.ID]; ok {
+		// Disallow mutation of the following fields
+		if w.Path != webhook.Path {
+			return fmt.Errorf("cannot change Webhook Path")
+		}
+		if w.Method != webhook.Method {
+			return fmt.Errorf("cannot change Webhook Method")
+		}
+
+		w.Name = webhook.Name
+		w.Enabled = webhook.Enabled
+
+		// Update each of the Forward URLs
+		for _, f := range webhook.ForwardUrls {
+			if f.ID == "" {
+				// New forward URL
+				f.ID = random.String(8)
+			}
+		}
+		w.ForwardUrls = webhook.ForwardUrls
+
+		return nil
+	}
+	return fmt.Errorf("webhook with id %s not found", webhook.ID)
 }
 
 func (m *MemoryStorage) StoreRequest(request *core.Request) error {
