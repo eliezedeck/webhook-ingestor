@@ -44,16 +44,6 @@ func (m *Storage) RemoveWebhook(id string) error {
 	return err
 }
 
-func (m *Storage) EnableWebhook(id string) error {
-	_, err := m.collWebhooks.UpdateOne(context.Background(), bson.D{{"_id", id}}, bson.D{{"$set", bson.D{{"enabled", true}}}})
-	return err
-}
-
-func (m *Storage) DisableWebhook(id string) error {
-	_, err := m.collWebhooks.UpdateOne(context.Background(), bson.D{{"_id", id}}, bson.D{{"$set", bson.D{{"enabled", false}}}})
-	return err
-}
-
 func (m *Storage) UpdateWebhook(webhook *core.Webhook) error {
 	existing, err := m.GetWebhook(webhook.ID)
 	if err != nil {

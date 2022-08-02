@@ -87,6 +87,19 @@ func SetupAdministration(e *echo.Echo, config ConfigStorage, reqStore RequestsSt
 		return web.OK(c)
 	})
 
+	// --- Webhook: Update
+	a.PUT("/webhooks/:id", func(c echo.Context) error {
+		webhook := &Webhook{}
+		if _, err := validation.ValidateJSONBody(c.Request().Body, webhook); err != nil {
+			return web.BadRequestError(c, "Invalid JSON body")
+		}
+		webhook.ID = c.Param("id")
+		if err := config.UpdateWebhook(webhook); err != nil {
+			return web.Error(c, err.Error())
+		}
+		return web.OK(c)
+	})
+
 	// --- Requests: List from newest
 	a.GET("/requests/newest", func(c echo.Context) error {
 		var err error

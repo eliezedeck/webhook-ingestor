@@ -55,22 +55,6 @@ func (m *MemoryStorage) RemoveWebhook(id string) error {
 	return fmt.Errorf("webhook with id %s not found", id)
 }
 
-func (m *MemoryStorage) EnableWebhook(id string) error {
-	if w, ok := m.webhooksById[id]; ok {
-		w.Enabled = true
-		return nil
-	}
-	return fmt.Errorf("webhook with id %s not found", id)
-}
-
-func (m *MemoryStorage) DisableWebhook(id string) error {
-	if w, ok := m.webhooksById[id]; ok {
-		w.Enabled = false
-		return nil
-	}
-	return fmt.Errorf("webhook with id %s not found", id)
-}
-
 func (m *MemoryStorage) UpdateWebhook(webhook *core.Webhook) error {
 	if w, ok := m.webhooksById[webhook.ID]; ok {
 		// Disallow mutation of the following fields
