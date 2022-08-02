@@ -7,12 +7,12 @@ import (
 )
 
 type ForwardUrl struct {
-	ID                     string        `json:"id" bson:"_id"`
-	Url                    string        `json:"url"                      validate:"required"`
-	KeepSuccessfulRequests int           `json:"keepSuccessfulRequests"`
-	Timeout                time.Duration `json:"timeout"                  validate:"required"`
-	ReturnAsResponse       int           `json:"returnAsResponse"         validate:"required"`
-	WaitTillCompletion     int           `json:"waitForCompletion"        validate:"required"`
+	ID                     string        `bson:"_id"                     json:"id"`
+	Url                    string        `bson:"url"                     json:"url"                      validate:"required"`
+	KeepSuccessfulRequests int           `bson:"keepSuccessfulRequests"  json:"keepSuccessfulRequests"`
+	Timeout                time.Duration `bson:"timeout"                 json:"timeout"                  validate:"required"`
+	ReturnAsResponse       int           `bson:"returnAsResponse"        json:"returnAsResponse"         validate:"required"`
+	WaitTillCompletion     int           `bson:"waitTillCompletion"      json:"waitForCompletion"        validate:"required"`
 }
 
 var (

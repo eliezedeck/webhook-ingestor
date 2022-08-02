@@ -17,14 +17,14 @@ import (
 )
 
 type Webhook struct {
-	ID          string        `json:"id" bson:"_id"`
-	Name        string        `json:"name"         validate:"required"`
-	Enabled     bool          `json:"enabled"`
-	Method      string        `json:"method"       validate:"required"`
-	Path        string        `json:"path"         validate:"required"`
-	ForwardUrls []*ForwardUrl `json:"forwardUrls"  validate:"required"`
+	ID          string        `bson:"_id"          json:"id"`
+	Name        string        `bson:"name"         json:"name"         validate:"required"`
+	Enabled     bool          `bson:"enabled"      json:"enabled"`
+	Method      string        `bson:"method"       json:"method"       validate:"required"`
+	Path        string        `bson:"path"         json:"path"         validate:"required"`
+	ForwardUrls []*ForwardUrl `bson:"forwardUrls"  json:"forwardUrls"  validate:"required"`
 
-	CreatedAt time.Time `json:"createdAt"`
+	CreatedAt time.Time `bson:"createdAt" json:"createdAt"`
 }
 
 func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error {
