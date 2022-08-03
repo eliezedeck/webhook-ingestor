@@ -34,7 +34,7 @@ func SetupAdministration(echoForWebhooks, echoForAdmin *echo.Echo, config Config
 
 	// --- Webhooks: List
 	a.GET("/webhooks", func(c echo.Context) error {
-		webhooks, err := config.GetValidWebhooks()
+		webhooks, err := config.GetAllWebhooks()
 		if err != nil {
 			return web.Error(c, err.Error())
 		}
@@ -52,7 +52,7 @@ func SetupAdministration(echoForWebhooks, echoForAdmin *echo.Echo, config Config
 		}
 
 		// Ensure that this Webhook doesn't already exist (using the Method and Path)
-		webhooks, err := config.GetValidWebhooks()
+		webhooks, err := config.GetAllWebhooks()
 		if err != nil {
 			return web.Error(c, err.Error())
 		}

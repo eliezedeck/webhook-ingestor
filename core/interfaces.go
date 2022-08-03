@@ -1,7 +1,7 @@
 package core
 
 type ConfigStorage interface {
-	GetValidWebhooks() ([]*Webhook, error)
+	GetAllWebhooks() ([]*Webhook, error)
 	GetWebhook(id string) (*Webhook, error)
 
 	AddWebhook(webhook *Webhook) error

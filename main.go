@@ -88,7 +88,7 @@ func buildEcho() *echo.Echo {
 }
 
 func setupWebhookPaths(e *echo.Echo, config core.ConfigStorage, reqStore core.RequestsStorage) {
-	w, err := config.GetValidWebhooks()
+	w, err := config.GetAllWebhooks()
 	if err != nil {
 		panic(err)
 	}

@@ -25,7 +25,7 @@ func NewMemoryStorage() *MemoryStorage {
 	}
 }
 
-func (m *MemoryStorage) GetValidWebhooks() ([]*core.Webhook, error) {
+func (m *MemoryStorage) GetAllWebhooks() ([]*core.Webhook, error) {
 	return m.webhooks, nil
 }
 

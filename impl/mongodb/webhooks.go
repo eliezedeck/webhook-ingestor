@@ -11,9 +11,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func (m *Storage) GetValidWebhooks() ([]*core.Webhook, error) {
+func (m *Storage) GetAllWebhooks() ([]*core.Webhook, error) {
 	opts := options.Find().SetSort(bson.D{{"createdAt", OrderASC}})
-	cur, err := m.collWebhooks.Find(context.Background(), bson.D{{"enabled", true}}, opts)
+	cur, err := m.collWebhooks.Find(context.Background(), bson.D{}, opts)
 	if err != nil {
 		return nil, err
 	}
