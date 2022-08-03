@@ -93,8 +93,10 @@ func SetupAdministration(echoForWebhooks, echoForAdmin *echo.Echo, config Config
 		if _, err := validation.ValidateJSONBody(c.Request().Body, webhook); err != nil {
 			return web.BadRequestError(c, "Invalid JSON body")
 		}
-		webhook.ID = c.Param("id")
-		if err := config.UpdateWebhook(webhook); err != nil {
+
+		// - This doesn't re-register the handler, simply update the cache that is going to be used by the handler.
+		// - This also makes a verification to ensure that it remains a valid Webhook.
+		if err := webhook.RegisterWithEcho(echoForWebhooks, reqStore); err != nil {
 			return web.Error(c, err.Error())
 		}
 

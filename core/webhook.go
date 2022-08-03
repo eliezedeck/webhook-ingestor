@@ -27,26 +27,55 @@ type Webhook struct {
 	CreatedAt time.Time `bson:"createdAt" json:"createdAt"`
 }
 
-func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error {
+func (w *Webhook) Verify() error {
 	// There must be exactly one forward url with the returnAsResponse flag set to true
 	returnAsResponseCount := 0
 	for _, furl := range w.ForwardUrls {
 		if furl.ReturnAsResponse >= 1 {
 			returnAsResponseCount++
 			if returnAsResponseCount > 1 {
-				logging.L.Error("Webhook has more than one forward url with returnAsResponse set to true", zap.String("id", w.ID))
 				return fmt.Errorf("webhook has more than one forward url with returnAsResponse set to true")
 			}
 		}
 	}
 	if returnAsResponseCount == 0 {
-		logging.L.Error("Webhook has no forward url with returnAsResponse set to true", zap.String("id", w.ID))
 		return fmt.Errorf("webhook has no forward url with returnAsResponse set to true")
+	}
+	return nil
+}
+
+var (
+	webhooksCache   = make(map[string]*Webhook)
+	webhooksCacheMu = &sync.Mutex{}
+)
+
+func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error {
+	if err := w.Verify(); err != nil {
+		return err
+	}
+
+	// Cache this Webhook
+	// - Upon Webhook update, this makes sure that handler will use the updated version, not the initial one
+	// - This is used to ensure that the same Webhook is not registered twice
+	key := fmt.Sprintf("%s %s", w.Method, w.Path)
+	webhooksCacheMu.Lock()
+	_, found := webhooksCache[key]
+	webhooksCache[key] = w
+	webhooksCacheMu.Unlock()
+	if found {
+		logging.L.Error("Webhook already registered, only Cache entry is updated", zap.String("id", w.ID), zap.String("key", key))
+		return nil
 	}
 
 	e.Add(w.Method, w.Path, func(c echo.Context) error {
 		reqId := fmt.Sprintf("r-%s", random.String(16))
-		L := logging.L.Named(fmt.Sprintf("Webhook[%s:%s]", w.ID, w.Path)).With(
+
+		// Always get the freshest version of the webhook from the Cache
+		webhooksCacheMu.Lock()
+		currentWebhook := webhooksCache[key]
+		webhooksCacheMu.Unlock()
+
+		L := logging.L.Named(fmt.Sprintf("Webhook[%s:%s]", currentWebhook.ID, currentWebhook.Path)).With(
 			zap.String("requestId", reqId),
 			zap.Time("time", time.Now()),
 			zap.Any("headers", c.Request().Header))
@@ -55,9 +84,9 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 		// Webhook has been called
 		//
 
-		if !w.Enabled {
+		if !currentWebhook.Enabled {
 			// Don't save the request here because it's not enabled
-			L.Warn("Attempt to use disabled Webhook route", zap.String("path", w.Path))
+			L.Warn("Attempt to use disabled Webhook route", zap.String("path", currentWebhook.Path))
 			return c.String(http.StatusNotFound, "404 Disabled")
 		}
 
@@ -82,18 +111,18 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 				Headers:       c.Request().Header,
 				Body:          string(body),
 				ForwardUrl:    furl,
-				FromWebhookId: w.ID,
+				FromWebhookId: currentWebhook.ID,
 				CreatedAt:     time.Now(),
 
 				ReplayPayload: &Replay{
 					RequestId:       reqId,
-					WebhookId:       w.ID,
+					WebhookId:       currentWebhook.ID,
 					ForwardUrlId:    furl.ID,
 					DeleteOnSuccess: 0,
 				},
 			}
 			if err := storage.StoreRequest(request); err != nil {
-				L.Error("Error saving request", zap.Error(err), zap.String("webhookId", w.ID))
+				L.Error("Error saving request", zap.Error(err), zap.String("webhookId", currentWebhook.ID))
 			} else {
 				L.Info("Request has been saved", zap.String("id", request.ID))
 			}
@@ -104,8 +133,8 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 		//
 		responseErr := make(chan error, 1)
 		wg := &sync.WaitGroup{}
-		if len(w.ForwardUrls) > 0 {
-			for _, furl := range w.ForwardUrls {
+		if len(currentWebhook.ForwardUrls) > 0 {
+			for _, furl := range currentWebhook.ForwardUrls {
 				if furl.WaitTillCompletion >= 1 {
 					wg.Add(1)
 				}
@@ -120,7 +149,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 					}()
 
 					// Prepare a new request, transfer the headers
-					request, _ := http.NewRequestWithContext(ctx, w.Method, furl.Url, bytes.NewReader(body))
+					request, _ := http.NewRequestWithContext(ctx, currentWebhook.Method, furl.Url, bytes.NewReader(body))
 					TransferHeaders(request.Header, c.Request().Header)
 
 					// Execute the request
