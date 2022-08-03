@@ -145,7 +145,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 					}()
 
 					// Prepare a new request, transfer the headers
-					request, _ := http.NewRequestWithContext(ctx, currentWebhook.Method, furl.Url, bytes.NewReader(body))
+					request, _ := http.NewRequestWithContext(ctx, c.Request().Method, furl.Url, bytes.NewReader(body))
 					TransferHeaders(request.Header, c.Request().Header)
 
 					// Execute the request
