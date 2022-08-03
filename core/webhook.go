@@ -67,7 +67,8 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 		return nil
 	}
 
-	e.Add(w.Method, w.Path, func(c echo.Context) error {
+	// Support a special method called ANY, which will match any method
+	handler := func(c echo.Context) error {
 		reqId := fmt.Sprintf("r-%s", random.String(16))
 
 		// Always get the freshest version of the webhook from the Cache
@@ -205,7 +206,12 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 			L.Error("Unsuccessful Webhook handling: {error}", zap.Error(err))
 		}
 		return err
-	})
+	}
+	if w.Method == "ANY" {
+		e.Any(w.Path, handler)
+	} else {
+		e.Add(w.Method, w.Path, handler)
+	}
 
 	logging.L.Info("Webhook has been registered: {method} {path} — {name}",
 		zap.String("id", w.ID),
