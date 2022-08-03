@@ -45,7 +45,7 @@ func SetupAdministration(echoForWebhooks, echoForAdmin *echo.Echo, config Config
 	a.POST("/webhooks", func(c echo.Context) error {
 		webhook := &Webhook{}
 		webhook.ID = fmt.Sprintf("w-%s", random.String(11))
-		webhook.Enabled = true // enabled by default
+		webhook.Enabled = 1 // enabled by default
 		webhook.CreatedAt = time.Now()
 		if _, err := validation.ValidateJSONBody(c.Request().Body, webhook); err != nil {
 			return web.BadRequestError(c, "Invalid JSON body")

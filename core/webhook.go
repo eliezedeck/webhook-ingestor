@@ -19,7 +19,7 @@ import (
 type Webhook struct {
 	ID          string        `bson:"_id"          json:"id"`
 	Name        string        `bson:"name"         json:"name"         validate:"required"`
-	Enabled     bool          `bson:"enabled"      json:"enabled"`
+	Enabled     int           `bson:"enabled"      json:"enabled"`
 	Method      string        `bson:"method"       json:"method"       validate:"required"`
 	Path        string        `bson:"path"         json:"path"         validate:"required"`
 	ForwardUrls []*ForwardUrl `bson:"forwardUrls"  json:"forwardUrls"  validate:"required"`
@@ -127,7 +127,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 		}
 
 		responseErr := make(chan error, 1)
-		if currentWebhook.Enabled && len(currentWebhook.ForwardUrls) > 0 {
+		if currentWebhook.Enabled >= 1 && len(currentWebhook.ForwardUrls) > 0 {
 			wg := &sync.WaitGroup{}
 			for _, furl := range currentWebhook.ForwardUrls {
 				if furl.WaitTillCompletion >= 1 {
