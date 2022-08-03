@@ -84,12 +84,6 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 		// Webhook has been called
 		//
 
-		if !currentWebhook.Enabled {
-			// Don't save the request here because it's not enabled
-			L.Warn("Attempt to use disabled Webhook route", zap.String("path", currentWebhook.Path))
-			return c.String(http.StatusNotFound, "404 Disabled")
-		}
-
 		// Get the full body of the request
 		body, err := io.ReadAll(c.Request().Body)
 		if err != nil {
@@ -128,12 +122,9 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 			}
 		}
 
-		//
-		// Forward the request to each of the ForwardUrls
-		//
 		responseErr := make(chan error, 1)
-		wg := &sync.WaitGroup{}
-		if len(currentWebhook.ForwardUrls) > 0 {
+		if currentWebhook.Enabled && len(currentWebhook.ForwardUrls) > 0 {
+			wg := &sync.WaitGroup{}
 			for _, furl := range currentWebhook.ForwardUrls {
 				if furl.WaitTillCompletion >= 1 {
 					wg.Add(1)
@@ -201,14 +192,13 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 
 			wg.Wait()
 		} else {
-			// Simply save the request
 			saveRequest(nil)
 			responseErr <- web.OK(c)
 		}
 
 		err = <-responseErr
 		if err != nil {
-			L.Error("Unsuccessful request: {error}", zap.Error(err))
+			L.Error("Unsuccessful Webhook handling: {error}", zap.Error(err))
 		}
 		return err
 	})
