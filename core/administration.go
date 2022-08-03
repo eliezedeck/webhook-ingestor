@@ -36,7 +36,7 @@ func SetupAdministration(echoForWebhooks, echoForAdmin *echo.Echo, config Config
 	a.GET("/webhooks", func(c echo.Context) error {
 		webhooks, err := config.GetValidWebhooks()
 		if err != nil {
-			return err // HTTP 500
+			return web.Error(c, err.Error())
 		}
 		return c.JSON(http.StatusOK, webhooks)
 	})
@@ -54,7 +54,7 @@ func SetupAdministration(echoForWebhooks, echoForAdmin *echo.Echo, config Config
 		// Ensure that this Webhook doesn't already exist (using the Method and Path)
 		webhooks, err := config.GetValidWebhooks()
 		if err != nil {
-			return err // HTTP 500
+			return web.Error(c, err.Error())
 		}
 		for _, w := range webhooks {
 			if w.Method == webhook.Method && w.Path == webhook.Path {
@@ -72,7 +72,7 @@ func SetupAdministration(echoForWebhooks, echoForAdmin *echo.Echo, config Config
 
 		// Immediately register the route so that it's available for requests
 		if err := webhook.RegisterWithEcho(echoForWebhooks, reqStore); err != nil {
-			return err // HTTP  500
+			return web.Error(c, err.Error())
 		}
 
 		return c.JSON(http.StatusOK, webhook)
@@ -93,6 +93,11 @@ func SetupAdministration(echoForWebhooks, echoForAdmin *echo.Echo, config Config
 		if _, err := validation.ValidateJSONBody(c.Request().Body, webhook); err != nil {
 			return web.BadRequestError(c, "Invalid JSON body")
 		}
+		webhook.ID = c.Param("id")
+		if err := config.UpdateWebhook(webhook); err != nil {
+			return web.Error(c, err.Error())
+		}
+
 		webhook.ID = c.Param("id")
 		if err := config.UpdateWebhook(webhook); err != nil {
 			return web.Error(c, err.Error())
@@ -118,7 +123,7 @@ func SetupAdministration(echoForWebhooks, echoForAdmin *echo.Echo, config Config
 
 		requests, err := reqStore.GetNewestRequests(int(count))
 		if err != nil {
-			return err // HTTP 500
+			return web.Error(c, err.Error())
 		}
 		return c.JSON(http.StatusOK, requests)
 	})
@@ -141,7 +146,7 @@ func SetupAdministration(echoForWebhooks, echoForAdmin *echo.Echo, config Config
 
 		requests, err := reqStore.GetOldestRequests(int(count))
 		if err != nil {
-			return err // HTTP 500
+			return web.Error(c, err.Error())
 		}
 		return c.JSON(http.StatusOK, requests)
 	})
@@ -179,27 +184,27 @@ func SetupAdministration(echoForWebhooks, echoForAdmin *echo.Echo, config Config
 		// Craft the request based on the saved Request instance
 		req, err := http.NewRequest(oreq.Method, furl.Url, strings.NewReader(oreq.Body))
 		if err != nil {
-			return err // HTTP 500
+			return web.Error(c, err.Error())
 		}
 		TransferHeaders(req.Header, oreq.Headers)
 
 		// Execute the request
 		response, err := ForwardHttpClient.Do(req)
 		if err != nil {
-			return err // HTTP 500
+			return web.Error(c, err.Error())
 		}
 		defer response.Body.Close()
 
 		TransferHeaders(c.Response().Header(), response.Header)
 		c.Response().WriteHeader(response.StatusCode)
 		if _, err = io.Copy(c.Response(), response.Body); err != nil {
-			return err // HTTP 500
+			return web.Error(c, err.Error())
 		}
 
 		// Should we delete the successful request?
 		if wreq.DeleteOnSuccess >= 1 {
 			if err = reqStore.DeleteRequest(wreq.RequestId); err != nil {
-				return err // HTTP 500
+				return web.Error(c, err.Error())
 			}
 		}
 
