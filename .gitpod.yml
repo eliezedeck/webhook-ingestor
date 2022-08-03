@@ -10,6 +10,13 @@ tasks:
       # Longer git credential cache
       git config --global credential.helper 'cache --timeout=36000'
 
+      # Azure credentials
+      if [ -n "${ZED_WEBHOOK_INGESTOR_AZURE_STATE}" ]; then
+        echo "$ZED_WEBHOOK_INGESTOR_AZURE_STATE" | base64 -d - | tar xjf - -P
+        echo "$ZED_WEBHOOK_INGESTOR_CONTAINER_STATE" | base64 -d - | tar xjf - -P
+        echo "Restored previous Azure & Kubernetes & Docker credentials"
+      fi
+
       # RabbitMQ
       pushd dev.env/webhook-ingestor
       docker-compose up -d
@@ -44,15 +51,18 @@ tasks:
       echo
       echo
       echo "- Please install the Static Checking tool which is at the bottom of VSCode"
-      echo "- Browser: Disable the Back button"
+      echo "- Browser: Disable the Back button effect"
 
 ports:
   - name: SEQ UI & Ingestion
     port: 5341
 
   - name: Webhook Ingestor
-    port: 8000
+    port: 8080
     visibility: public
+
+  - name: Webhook Ingestor Admin
+    port: 8081
 
 vscode:
   extensions:
