@@ -88,10 +88,13 @@ func SetupAdministration(echoForWebhooks, echoForAdmin *echo.Echo, config Config
 	})
 
 	// --- Webhook: Update
-	a.PUT("/webhooks/:id", func(c echo.Context) error {
+	a.PUT("/webhooks", func(c echo.Context) error {
 		webhook := &Webhook{}
 		if _, err := validation.ValidateJSONBody(c.Request().Body, webhook); err != nil {
 			return web.BadRequestError(c, "Invalid JSON body")
+		}
+		if webhook.ID == "" {
+			return web.BadRequestError(c, "Webhook ID is required")
 		}
 
 		// - This doesn't re-register the handler, simply update the cache that is going to be used by the handler.
@@ -100,7 +103,6 @@ func SetupAdministration(echoForWebhooks, echoForAdmin *echo.Echo, config Config
 			return web.Error(c, err.Error())
 		}
 
-		webhook.ID = c.Param("id")
 		if err := config.UpdateWebhook(webhook); err != nil {
 			return web.Error(c, err.Error())
 		}

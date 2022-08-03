@@ -63,7 +63,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 	webhooksCache[key] = w
 	webhooksCacheMu.Unlock()
 	if found {
-		logging.L.Error("Webhook already registered, only Cache entry is updated", zap.String("id", w.ID), zap.String("key", key))
+		logging.L.Info("Webhook already registered, only Cache entry is updated: {key}", zap.String("id", w.ID), zap.String("key", key))
 		return nil
 	}
 
