@@ -98,6 +98,10 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 
 		saveRequest := func(furl *ForwardUrl) {
 			// Save the request
+			forwardUrlId := ""
+			if furl != nil {
+				forwardUrlId = furl.ID
+			}
 			request := &Request{
 				ID:            reqId,
 				Method:        c.Request().Method,
@@ -111,7 +115,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 				ReplayPayload: &Replay{
 					RequestId:       reqId,
 					WebhookId:       currentWebhook.ID,
-					ForwardUrlId:    furl.ID,
+					ForwardUrlId:    forwardUrlId,
 					DeleteOnSuccess: 0,
 				},
 			}
