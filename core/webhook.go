@@ -209,6 +209,7 @@ func (w *Webhook) RegisterWithEcho(e *echo.Echo, storage RequestsStorage) error 
 	}
 	if w.Method == "ANY" {
 		e.Any(w.Path, handler)
+		logging.L.Info("Special ANY catch-all method for {path}", zap.String("path", w.Path))
 	} else {
 		e.Add(w.Method, w.Path, handler)
 	}
